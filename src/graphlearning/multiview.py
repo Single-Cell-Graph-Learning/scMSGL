@@ -169,6 +169,8 @@ def learn_multiple_signed_graphs(X, assoc_func, density, relation, **kwargs):
         beta = 0
         gamma = 0
 
+    rng = np.random.default_rng()
+
     iter = 0
     while True:
         iter += 1
@@ -198,27 +200,35 @@ def learn_multiple_signed_graphs(X, assoc_func, density, relation, **kwargs):
         update_gamma = abs(consensus_density - density) > 1e-2 if relation > 0 else False
 
         if update_beta:
+            rnd = rng.uniform(0.8, 1.0)
             diff = obtained_relation - relation
             if diff > 0:
-                beta = max(beta - 2*abs(diff), beta*0.7) 
+                beta = max(beta - 2*abs(diff), beta*(1-rnd*0.3)) 
             else:
-                beta = min(beta + 2*abs(diff), beta*1.3)
+                beta = min(beta + 2*abs(diff), beta*(1+rnd*0.3))
 
         if update_alpha:
+            rnd = rng.uniform(0.8, 1.0)
             diff = view_density - density
             if diff > 0:
-                alpha = max(alpha - 2*abs(diff), alpha*0.7) 
+                alpha = max(alpha - 2*abs(diff), alpha*(1-rnd*0.3)) 
             else:
-                alpha = min(alpha + 2*abs(diff), alpha*1.3)
+                alpha = min(alpha + 2*abs(diff), alpha*(1+rnd*0.3))
 
         if update_gamma:
+            rnd = rng.uniform(0.8, 1.0)
             diff = consensus_density - density
             if diff > 0:
-                gamma = min(gamma + 2*abs(diff), gamma*1.3) 
+                gamma = min(gamma + 2*abs(diff), gamma*(1+rnd*0.3)) 
             else:
-                gamma = max(gamma - 2*abs(diff), gamma*0.7)
+                gamma = max(gamma - 2*abs(diff), gamma*(1-rnd*0.3))
 
         if (not update_beta) and (not update_alpha) and (not update_gamma):
+            break
+
+        if iter > 50:
+            print("Hyperparameter search run too much. It is aborted.",
+                  "Try initiating them at different values.")
             break
 
     # Optimal parameter values
