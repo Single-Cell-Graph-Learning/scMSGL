@@ -48,9 +48,12 @@ def signed(true_edges, pred_edges, type) -> pd.DataFrame:
                     and g1 != g2]
             )
 
+        if len(edges) == 0:
+            auprc_ratios[sgn] = 1
+            continue
+
         pred_adj = sparse.csr_matrix((edges[:, 0], (edges[:, 1], edges[:, 2])), 
                                      shape=(n_nodes, n_nodes))
-
 
         if type == "undirected":
             true_adj += true_adj.T
